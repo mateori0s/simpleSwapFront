@@ -1,156 +1,165 @@
-🚀 SimpleSwap - Solidity AMM Contract with Hardhat
-This repository contains a SimpleSwap smart contract implemented in Solidity, which simulates the core functionalities of a Uniswap-like Automated Market Maker (AMM). It includes logic for adding and removing liquidity, as well as swapping tokens. The project is set up with Hardhat for development, testing, and deployment.
+#  SimpleSwap - Solidity AMM Contract with Hardhat
 
-✨ Core Functionalities: SimpleSwap.sol
-The SimpleSwap.sol contract is the heart of this project, acting as a decentralized exchange for a specific pair of ERC20 tokens. It also issues its own ERC20 tokens (SST) as liquidity provider (LP) tokens.
+This repository implements a simplified Uniswap-like Automated Market Maker (AMM) smart contract using Solidity and Hardhat. It supports adding/removing liquidity and swapping between two ERC20 tokens. The contract issues LP tokens (SST) for liquidity providers.
 
-constructor(address _tokenA, address _tokenB)
+---
 
-Initializes the SimpleSwap contract with the addresses of the two ERC20 tokens that will form the liquidity pool.
+## Core Contract: `SimpleSwap.sol`
 
-Sets the name ("SimpleSwap Token") and symbol ("SST") for the LP tokens that will be minted to liquidity providers.
+A decentralized exchange for two specific ERC20 tokens. It mints LP tokens called **SimpleSwap Token (SST)**.
 
-Ensures that the provided token addresses are not identical.
+### @constructor `SimpleSwap(address _tokenA, address _tokenB)`
+Initializes the contract with two distinct ERC20 tokens and sets LP token metadata.
 
-addLiquidity(address _tokenA, address _tokenB, uint256 amountADesired, uint256 amountBDesired, uint256 amountAMin, uint256 amountBMin, address to, uint256 deadline)
+#### @param _tokenA Address of token A  
+#### @param _tokenB Address of token B  
+#### @dev Reverts if tokens are identical. Sets name: "SimpleSwap Token", symbol: "SST".  
 
-Allows users to deposit a pair of tokens (Token A and Token B) into the pool to provide liquidity.
+---
 
-Initial Liquidity: If it's the first liquidity provision, amountADesired and amountBDesired are used directly, and LP tokens are minted based on the geometric mean (sqrt(amountA * amountB)).
+##  `addLiquidity(...)`
 
-Adding to Existing Pool: For subsequent liquidity additions, the amounts are adjusted to maintain the current pool's token ratio, minimizing slippage for the liquidity provider.
+Adds liquidity to the pool and mints SST tokens proportionally.
 
-Requires prior approval for the SimpleSwap contract to spend the desired token amounts from the sender.
+#### @param _tokenA Address of token A (must match contract configuration)  
+#### @param _tokenB Address of token B (must match contract configuration)  
+#### @param amountADesired Desired amount of token A to add  
+#### @param amountBDesired Desired amount of token B to add  
+#### @param amountAMin Minimum token A (slippage protection)  
+#### @param amountBMin Minimum token B (slippage protection)  
+#### @param to Address to receive minted LP tokens  
+#### @param deadline Transaction deadline timestamp  
 
-Includes amountAMin and amountBMin parameters for slippage protection.
+#### @return amountA Actual token A added  
+#### @return amountB Actual token B added  
+#### @return liquidity Amount of LP tokens minted  
 
-LP tokens (SST) are minted to the specified to address.
+#### @dev  
+- Requires prior approval.  
+- Reverts if tokens mismatch or deadline exceeded.  
+- For initial liquidity: uses geometric mean sqrt(A * B).  
+- Maintains pool ratio for subsequent liquidity.  
+- Reverts on slippage conditions.  
 
-Reverts if the deadline is passed, tokens are invalid, or minimum amounts are not met.
+---
 
-removeLiquidity(address _tokenA, address _tokenB, uint256 liquidity, uint256 amountAMin, uint256 amountBMin, address to, uint256 deadline)
+## `removeLiquidity(...)`
 
-Enables users to withdraw their proportional share of the underlying tokens (Token A and Token B) from the pool by burning their LP tokens (SST).
+Burns LP tokens and redeems underlying token A and B.
 
-The amounts of Token A and Token B returned are calculated based on the amount of LP tokens burned relative to the total liquidity.
+#### @param _tokenA Address of token A (must match contract)  
+#### @param _tokenB Address of token B (must match contract)  
+#### @param liquidity Amount of LP tokens to burn  
+#### @param amountAMin Minimum token A to receive  
+#### @param amountBMin Minimum token B to receive  
+#### @param to Address to receive the tokens  
+#### @param deadline Deadline for transaction  
 
-Requires the sender to have sufficient LP tokens and to have approved the SimpleSwap contract to burn them.
+#### @return amountA Token A received  
+#### @return amountB Token B received  
 
-Includes amountAMin and amountBMin for slippage protection on withdrawal.
+#### @dev  
+- Calculates proportional amount based on reserves.  
+- Reverts if below slippage limits or deadline passed.  
+- Transfers tokens and burns SST from sender.  
 
-Reverts if the deadline is passed, tokens are invalid, or minimum amounts are not met.
+---
 
-swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint256 deadline)
+##  `swapExactTokensForTokens(...)`
 
-Facilitates the exchange of an exact amount of an input token for an output token within the pool.
+Swaps a fixed input amount for the corresponding output token.
 
-Currently supports direct swaps between tokenA and tokenB (the path array must have a length of 2: [tokenIn, tokenOut]).
+#### @param amountIn Exact input token amount  
+#### @param amountOutMin Minimum acceptable output (slippage protection)  
+#### @param path Array with [inputToken, outputToken]  
+#### @param to Receiver address for output token  
+#### @param deadline Deadline timestamp  
 
-The output amount is calculated using the constant product formula (x * y = k) based on the current pool reserves.
+#### @dev  
+- Only supports 2-token direct swap (`path.length == 2`)  
+- Uses constant product formula  
+- Reverts if deadline or slippage fails  
 
-Requires prior approval for the SimpleSwap contract to spend the amountIn of the input token from the sender.
+---
 
-Includes amountOutMin for slippage protection, ensuring the user receives at least a minimum amount of the output token.
+##  `getPrice(address _tokenA, address _tokenB)`  
+Returns the price of `_tokenA` in terms of `_tokenB`.
 
-Reverts if the deadline is passed, the path is invalid, the output amount is too low, or there is no liquidity.
+#### @param _tokenA Base token  
+#### @param _tokenB Quote token  
+#### @return price Scaled price (`1e18` precision)  
 
-getPrice(address _tokenA, address _tokenB) external view returns (uint256 price)
+#### @dev  
+- Reverts if tokens are not in the pool  
+- Price = (reserveB * 1e18) / reserveA (or vice versa)  
 
-A view function that returns the current price of one token in terms of the other, based on the current reserves in the pool.
+---
 
-The price is scaled by 1e18 for precision (e.g., a price of 2 * 1e18 means 1 _tokenA is worth 2 _tokenB).
+##  `getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)`
 
-Reverts if invalid token addresses are provided or if there is no liquidity in the pool.
+Calculates output token amount using the constant product formula.
 
-getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) public pure returns (uint256 amountOut)
+#### @param amountIn Input amount  
+#### @param reserveIn Reserve of input token  
+#### @param reserveOut Reserve of output token  
+#### @return amountOut Output token amount  
 
-An internal pure function that calculates the amount of output tokens received for a given input amount and current pool reserves.
+#### @dev  
+- Formula: `amountOut = (amountIn * reserveOut) / (amountIn + reserveIn)`  
+- Reverts if reserves or input are zero  
 
-This function implements the core AMM pricing logic: amountOut = (amountIn * reserveOut) / (amountIn + reserveIn).
+---
 
-Reverts if amountIn is zero or if either reserveIn or reserveOut is zero (indicating no liquidity).
+##  `sqrt(uint256 y)`
 
-sqrt(uint256 y) internal pure returns (uint256 z)
+Computes integer square root using the Babylonian method.
 
-An internal pure helper function to calculate the integer square root of a number.
+#### @param y Value to compute sqrt  
+#### @return z Resulting sqrt value  
 
-Primarily used in the initial addLiquidity calculation for minting LP tokens based on the geometric mean of the deposited amounts.
+#### @dev  
+- Used during initial liquidity deposit to compute LP tokens  
 
-🧪 Testing
-This project includes a comprehensive suite of unit tests to ensure the correct functionality and robustness of the SimpleSwap contract.
+---
 
-SimpleSwap.test.js: Contains detailed tests for all public and external functions of SimpleSwap.sol, covering:
+## Project Structure & Technologies
 
-Successful execution of functions (e.g., adding liquidity, performing swaps).
+- **Solidity**: Smart contract language  
+- **Hardhat**: Development, testing, deployment framework  
+- **OpenZeppelin Contracts**: Secure ERC20 implementations  
+- **Ethers.js**: JS library for blockchain interactions  
+- **Chai & Mocha**: Test frameworks  
+- **Tailwind CSS**: Frontend styling framework  
 
-Revert conditions (e.g., expired deadlines, insufficient amounts, invalid tokens, zero liquidity).
+---
 
-Correct calculation of amounts and balances.
+## Testing
 
-TestERC20.sol: A custom mock ERC20 token contract used in tests to simulate real ERC20 tokens. It includes a mint function for easy token distribution in test scenarios.
+All public and external functions are covered in `SimpleSwap.test.js`.
 
-How to Run Tests
-Ensure all dependencies are installed (see Installation).
+### Includes:
+- Functional tests for adding/removing liquidity, swapping
+- Edge case tests: zero liquidity, expired deadlines, slippage fails
 
-Compile your contracts:
-
+### To run tests:
+-bash
 npx hardhat compile
-
-Run the tests:
-
 npx hardhat test
 
-You will see a detailed report of passed and failed tests in your terminal.
+## Frontend Interface
 
-🌐 Frontend Interface
-A basic HTML frontend (index.html) is provided to visually interact with the deployed SimpleSwap contract. This interface uses Tailwind CSS for styling and Ethers.js for blockchain interaction.
+### @notice  
+A basic HTML frontend is available to visually interact with the deployed `SimpleSwap` contract.  
+It is styled using **Tailwind CSS** for responsiveness and uses **Ethers.js** for Web3 interactions.
 
-How to Use the Frontend
-Start a Local Hardhat Network:
-Open a new terminal and run:
+### 🔗 Live Interface  
+GitHub Pages Deployment:  
+👉 https://mateori0s.github.io/simpleSwapFront/front_end/
 
-npx hardhat node
+## Author
 
-This will start a local blockchain network and display test accounts with their private keys.
+Mateo Rios (@mateori0s)
 
-Deploy Contracts to the Local Network:
-In a separate terminal, run a deployment script (e.g., scripts/deploy.js) to deploy SimpleSwap and TestERC20 tokens to your local Hardhat network. An example scripts/deploy.js is provided in the Getting Started section above.
+---
 
-npx hardhat run scripts/deploy.js --network localhost
-
-Copy the deployed addresses of SimpleSwap, Token A, and Token B from the console output.
-
-Update script.js:
-Ensure your script.js file (which should be linked in index.html) is updated with the correct contract addresses and ABIs.
-
-// script.js (example, update with your actual ABIs and addresses)
-const SIMPLE_SWAP_ADDRESS = "0xYourSimpleSwapContractAddress"; // Paste SimpleSwap address here!
-const TOKEN_A_ADDRESS = "0xYourTokenAContractAddress";       // Paste Token A address here!
-const TOKEN_B_ADDRESS = "0xYourTokenBContractAddress";       // Paste Token B address here!
-
-// ABIs (you can get them from artifacts/contracts/SimpleSwap.sol/SimpleSwap.json and TestERC20.sol/TestERC20.json)
-const SIMPLE_SWAP_ABI = [ /* ... your SimpleSwap ABI here ... */ ];
-const ERC20_ABI = [ /* ... your TestERC20 (or generic ERC20) ABI here ... */ ];
-
-// ... rest of your JavaScript logic ...
-
-Open index.html:
-Simply open the index.html file in your web browser. You will need a Web3 wallet extension (like MetaMask) connected to your local Hardhat network (localhost:8545 by default) to interact with the interface.
-
-🛠️ Technologies Used
-Solidity: Programming language for smart contracts.
-
-Hardhat: Ethereum development environment.
-
-OpenZeppelin Contracts: Library of secure and reusable smart contracts (ERC20, IERC20).
-
-Ethers.js: JavaScript library for interacting with the Ethereum blockchain.
-
-Chai: Assertion library for testing.
-
-Mocha: Testing framework (integrated with Hardhat).
-
-Tailwind CSS: Utility-first CSS framework for rapid and responsive UI development.
-
-📄 License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+© 2025
