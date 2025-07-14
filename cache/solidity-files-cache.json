@@ -1,9 +1,9 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\contracts\\SimpleSwap.sol": {
-      "lastModificationDate": 1751944094299,
-      "contentHash": "eb5d3c3fe878634e0db4878d85fdce5a",
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\contracts\\SimpleSwap.sol": {
+      "lastModificationDate": 1752470641900,
+      "contentHash": "94b11845249fcd94b5f25491a85f225c",
       "sourceName": "contracts/SimpleSwap.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -43,8 +43,8 @@
         "SimpleSwap"
       ]
     },
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
-      "lastModificationDate": 1752458782856,
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
+      "lastModificationDate": 1752469848498,
       "contentHash": "57d79df281f57bbb1b09214c7914f877",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -87,8 +87,8 @@
         "ERC20"
       ]
     },
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
-      "lastModificationDate": 1752458782939,
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
+      "lastModificationDate": 1752469848664,
       "contentHash": "8f19f64d2adadf448840908bbaf431c8",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -126,8 +126,8 @@
         "IERC20"
       ]
     },
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
-      "lastModificationDate": 1752458782805,
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
+      "lastModificationDate": 1752469848303,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -165,8 +165,8 @@
         "Context"
       ]
     },
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
-      "lastModificationDate": 1752458782824,
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
+      "lastModificationDate": 1752469848391,
       "contentHash": "267d92fe4de67b1bdb3302c08f387dbf",
       "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
       "solcConfig": {
@@ -206,8 +206,8 @@
         "IERC721Errors"
       ]
     },
-    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
-      "lastModificationDate": 1752458782941,
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
+      "lastModificationDate": 1752469848669,
       "contentHash": "794db3115001aa372c79326fcfd44b1f",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
       "solcConfig": {
@@ -245,6 +245,47 @@
       ],
       "artifacts": [
         "IERC20Metadata"
+      ]
+    },
+    "C:\\Users\\Mateo\\Documents\\GitHub\\ETH Kipu\\sWF2\\simpleSwapFront\\contracts\\TestERC20.sol": {
+      "lastModificationDate": 1752470551484,
+      "contentHash": "e81633eb0d170dede1b94af77094ff3f",
+      "sourceName": "contracts/TestERC20.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "metadata": {
+            "useLiteralContent": false
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "TestERC20"
       ]
     }
   }
