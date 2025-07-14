@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimpleSwap Frontend</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h1 { color: #333; }
+    input, button { padding: 8px; margin: 5px; }
+    .box { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; background: white; }
+  </style>
+</head>
+<body>
+  <h1>SimpleSwap Interface</h1>
+
+  <div class="box">
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="walletAddress">Not connected</p>
+  </div>
+
+  <div class="box">
+    <h2>Approve and Swap Tokens</h2>
+    <input id="amountIn" placeholder="Amount In" /> <br/>
+    <input id="tokenIn" placeholder="Token In Address" /> <br/>
+    <input id="tokenOut" placeholder="Token Out Address" /> <br/>
+    <button onclick="approveToken()">Approve Token</button>
+    <button onclick="swapTokens()">Swap</button>
+    <p id="swapStatus"></p>
+  </div>
+
+  <div class="box">
+    <h2>Get Price</h2>
+    <input id="priceTokenA" placeholder="Token A Address" /> <br/>
+    <input id="priceTokenB" placeholder="Token B Address" /> <br/>
+    <button onclick="getPrice()">Get Price</button>
+    <p id="priceOutput"></p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
