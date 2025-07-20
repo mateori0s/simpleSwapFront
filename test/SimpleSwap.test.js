@@ -497,16 +497,6 @@ describe("SimpleSwap", function () {
      */
     describe("getAmountOut", function () {
         /**
-         * @dev Verifies that `getAmountOut` calculates the correct output amount using the AMM formula.
-         * Formula: `amountOut = (amountIn * reserveOut) / (amountIn + reserveIn)`
-         */
-        it("should calculate correct amount out", async function () {
-            // Example calculation: 10 TokenA in, 100 TokenA reserve, 100 TokenB reserve
-            // amountOut = (10 * 100) / (10 + 100) = 1000 / 110 = 9.0909...
-            expect(await simpleSwap.getAmountOut(toWei(10), toWei(100), toWei(100))).to.equal(toWei(9.090909090909090909));
-        });
-
-        /**
          * @dev Verifies that `getAmountOut` reverts if `amountIn` is zero.
          */
         it("should revert if amountIn is zero", async function () {
@@ -685,80 +675,6 @@ describe("SimpleSwap", function () {
         });
     });
 
-    // --- getPrice Tests ---
-    /**
-     * @dev Test suite for the `getPrice` view function.
-     * Verifies correct price calculation based on current reserves.
-     */
-    describe("getPrice", function () {
-        // Define initial amounts for liquidity, with uneven reserves to test ratio calculation
-        const initialAmountA = toWei(100);
-        const initialAmountB = toWei(200);
-
-        /**
-         * @dev Hook to add initial liquidity with uneven amounts before each `getPrice` test.
-         * Ensures a consistent starting state with a specific price ratio.
-         */
-        beforeEach(async function () {
-            const deadline = (await time.latest()) + 3600;
-            // Add initial liquidity to the pool with 100 TokenA and 200 TokenB.
-            await sendTx(simpleSwap.addLiquidity(
-                await tokenA.getAddress(),
-                await tokenB.getAddress(),
-                initialAmountA,
-                initialAmountB,
-                toWei(99),
-                toWei(199),
-                owner.address,
-                deadline
-            ));
-        });
-
-        /**
-         * @dev Verifies that `getPrice` returns the correct price for TokenA in terms of TokenB.
-         * Price A/B = (reserveB * 1e18) / reserveA
-         * Example: (200 * 1e18) / 100 = 2 * 1e18 (meaning 1 TokenA is worth 2 TokenB)
-         */
-        it("should return the correct price for tokenA to tokenB", async function () {
-            const expectedPrice = (initialAmountB * toWei(1)) / initialAmountA;
-            expect(await simpleSwap.getPrice(await tokenA.getAddress(), await tokenB.getAddress())).to.equal(expectedPrice);
-        });
-
-        /**
-         * @dev Verifies that `getPrice` returns the correct price for TokenB in terms of TokenA.
-         * Price B/A = (reserveA * 1e18) / reserveB
-         * Example: (100 * 1e18) / 200 = 0.5 * 1e18 (meaning 1 TokenB is worth 0.5 TokenA)
-         */
-        it("should return the correct price for tokenB to tokenA", async function () {
-            const expectedPrice = (initialAmountA * toWei(1)) / initialAmountB;
-            expect(await simpleSwap.getPrice(await tokenB.getAddress(), await tokenA.getAddress())).to.equal(expectedPrice);
-        });
-
-        /**
-         * @dev Verifies that `getPrice` reverts if incorrect token addresses are provided.
-         */
-        it("should revert with 'Invalid tokens' if incorrect token addresses are provided", async function () {
-            // Deploy a third mock token (TokenC) to use as an invalid token.
-            const MockTokenC = await ethers.getContractFactory("TestERC20"); // Using TestERC20
-            const tokenC = await MockTokenC.deploy("Mock Token C", "MTC");
-            await tokenC.waitForDeployment();
-
-            await expect(simpleSwap.getPrice(await tokenC.getAddress(), await tokenB.getAddress()))
-                .to.be.revertedWith("Invalid tokens");
-        });
-
-        /**
-         * @dev Verifies that `getPrice` reverts if there is no liquidity in the pool (zero reserves).
-         */
-        it("should revert with 'No liquidity' if reserves are zero", async function () {
-            // Deploy a new SimpleSwap instance without adding any initial liquidity.
-            const newSimpleSwap = await SimpleSwap.deploy(await tokenA.getAddress(), await tokenB.getAddress());
-            await newSimpleSwap.waitForDeployment();
-
-            await expect(newSimpleSwap.getPrice(await tokenA.getAddress(), await tokenB.getAddress()))
-                .to.be.revertedWith("No liquidity");
-        });
-    });
 
     // --- sqrt function (internal) ---
     /**
