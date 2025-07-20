@@ -1,6 +1,5 @@
 
-# 🌀 SimpleSwap Protocol
-
+# 🌀 Simple Swap 
 A minimalistic decentralized token swap protocol implemented in Solidity, featuring Uniswap-style liquidity management and a simple HTML/CSS/JavaScript front-end interface. Built for the Módulo 3 evaluation.
 
 ## 📜 Smart Contract Overview
