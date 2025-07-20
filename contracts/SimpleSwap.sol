@@ -7,12 +7,47 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @title SimpleSwap Smart Contract
 /// @author mateori0s
 /// @notice Implements Uniswap-like add/remove liquidity and token swap logic for a fixed pair of ERC20 tokens.
+/// @dev Uses constant product AMM formula and emits events for liquidity and swap operations.
 contract SimpleSwap is ERC20 {
     /// @notice First token in the pair
     IERC20 public immutable tokenA;
 
     /// @notice Second token in the pair
     IERC20 public immutable tokenB;
+
+    /// @notice Emitted when liquidity is added to the pool
+
+    /// @notice Emitted when liquidity is added to the pool
+    /// @param provider Address providing liquidity
+    /// @param amountA Amount of token A added
+    /// @param amountB Amount of token B added
+    /// @param liquidity LP tokens minted
+    event LiquidityAdded(
+        address indexed provider,
+        uint256 amountA,
+        uint256 amountB,
+        uint256 liquidity
+    );
+
+    /// @notice Emitted when liquidity is removed from the pool
+    /// @param provider Address removing liquidity
+    /// @param amountA Amount of token A returned to the user
+    /// @param amountB Amount of token B returned to the user
+    event LiquidityRemoved(
+        address indexed provider,
+        uint256 amountA,
+        uint256 amountB
+    );
+
+    /// @notice Emitted when tokens are swapped
+    event TokenSwapped(
+        address indexed sender,
+        address indexed tokenIn,
+        address indexed tokenOut,
+        uint256 amountIn,
+        uint256 amountOut,
+        address to
+    );
 
     /// @notice Deploys the SimpleSwap contract for a fixed token pair
     /// @param _tokenA Address of token A
@@ -27,6 +62,7 @@ contract SimpleSwap is ERC20 {
     }
 
     /// @notice Adds liquidity to the pool
+    /// @dev Transfers tokens from sender, mints LP tokens and emits LiquidityAdded
     /// @param _tokenA Address of token A (must match contract pair)
     /// @param _tokenB Address of token B (must match contract pair)
     /// @param amountADesired Desired amount of token A
@@ -48,19 +84,16 @@ contract SimpleSwap is ERC20 {
         address to,
         uint256 deadline
     ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
-        
-        // Validate token addresses
         require(
             _tokenA == address(tokenA) && _tokenB == address(tokenB),
             "Invalid tokens"
         );
-        // Validate deadline
         require(block.timestamp <= deadline, "Expired");
 
         address self = address(this);
-        uint256 totalLiquidity = totalSupply(); // Current total supply of LP tokens
-        uint256 balanceA = tokenA.balanceOf(self); // Current balance of tokenA
-        uint256 balanceB = tokenB.balanceOf(self); // Current balance of tokenB
+        uint256 totalLiquidity = totalSupply();
+        uint256 balanceA = tokenA.balanceOf(self);
+        uint256 balanceB = tokenB.balanceOf(self);
 
         if (totalLiquidity > 0) {
             uint256 amountBOptimal = (amountADesired * balanceB) / balanceA;
@@ -89,9 +122,12 @@ contract SimpleSwap is ERC20 {
 
         liquidity = liquidity > 0 ? liquidity : sqrt(amountA * amountB);
         _mint(to, liquidity);
+
+        emit LiquidityAdded(sender, amountA, amountB, liquidity);
     }
 
     /// @notice Removes liquidity and returns token A and B
+    /// @dev Transfers tokens back to user, burns LP tokens and emits LiquidityRemoved
     /// @param _tokenA Address of token A (must match contract pair)
     /// @param _tokenB Address of token B (must match contract pair)
     /// @param liquidity Amount of liquidity tokens to burn
@@ -133,9 +169,12 @@ contract SimpleSwap is ERC20 {
         _burn(msg.sender, liquidity);
         _tokenAContract.transfer(to, amountA);
         _tokenBContract.transfer(to, amountB);
+
+        emit LiquidityRemoved(msg.sender, amountA, amountB);
     }
 
     /// @notice Swaps an exact amount of input tokens for as many output tokens as possible
+    /// @dev Performs constant product AMM swap logic and emits TokenSwapped
     /// @param amountIn Exact amount of tokens to swap from input token
     /// @param amountOutMin Minimum amount of output tokens expected
     /// @param path Array of token addresses (must be [tokenIn, tokenOut])
@@ -163,15 +202,32 @@ contract SimpleSwap is ERC20 {
 
         tokenIn.transferFrom(msg.sender, self, amountIn);
         tokenOut.transfer(to, amountOut);
+
+        emit TokenSwapped(
+            msg.sender,
+            address(tokenIn),
+            address(tokenOut),
+            amountIn,
+            amountOut,
+            to
+        );
     }
 
-    /// @notice Returns current price of token B in terms of token A
-    /// @return price Token B per token A multiplied by 1e18
-    function getPrice() external view returns (uint256 price) {
-        address self = address(this);
-        uint256 reserveA = tokenA.balanceOf(self);
-        uint256 reserveB = tokenB.balanceOf(self);
+    /// @notice Returns the price of tokenB in terms of tokenA, validating pair matches
+    /// @param _tokenA Expected address of token A (must match the contract's pair)
+    /// @param _tokenB Expected address of token B (must match the contract's pair)
+    /// @return price Price of tokenB in terms of tokenA, multiplied by 1e18
+    function getPrice(
+        address _tokenA,
+        address _tokenB
+    ) external view returns (uint256 price) {
+        require(
+            _tokenA == address(tokenA) && _tokenB == address(tokenB),
+            "Invalid token pair"
+        );
 
+        uint256 reserveA = tokenA.balanceOf(address(this));
+        uint256 reserveB = tokenB.balanceOf(address(this));
         require(reserveA > 0 && reserveB > 0, "No liquidity");
 
         price = (reserveB * 1e18) / reserveA;
